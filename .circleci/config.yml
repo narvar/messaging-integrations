@@ -104,7 +104,7 @@ workflows:
           image_name: messaging-integrations
           image_tag: SHA-$CIRCLE_SHA1
           requires:
-            - hold
+            - publish
   messaging-integrations-prod-workflow:
     jobs:
       - build:
