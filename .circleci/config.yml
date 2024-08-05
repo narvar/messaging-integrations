@@ -62,9 +62,10 @@ workflows:
     jobs:
       - build:
           context: build
-          branches:
-            only:
-              - release
+          filters:
+            branches:
+              only:
+                - release
       - publish:
           context: build
           requires:
