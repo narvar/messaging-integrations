@@ -94,10 +94,6 @@ workflows:
           context: build
           requires:
             - build
-      - hold:
-          type: approval
-          requires:
-            - publish
       - image-updater/update-image:
           context: argocd
           name: update-image-qa20
