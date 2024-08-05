@@ -30,7 +30,7 @@ jobs:
       - devops/artifactory-export:
           build-provider: AWS
       - devops/jfrog-maven:
-          command: clean install -Dmaven.test.skip=true
+          command: clean install
       - *persist_to_workspace
 
   unit_test:
