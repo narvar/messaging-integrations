@@ -14,8 +14,7 @@
 	<name>Messaging Integrations</name>
 	<description>Messaging Integrations</description>
 	<properties>
-		<java.version>17</java.version>
-		<spring-cloud.version>2022.0.1</spring-cloud.version>
+		<java.version>13</java.version>
 		<spotless-maven-plugin.version>2.22.7</spotless-maven-plugin.version>
 		<google-java-format.version>1.15.0</google-java-format.version>
 		<junit.version>4.13.1</junit.version>
