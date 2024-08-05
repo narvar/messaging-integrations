@@ -1,0 +1,138 @@
+version: 2.1
+
+orbs:
+  devops: narvar/devops@0.0.30
+  image-updater: narvar/orb-image-updater@2.1.0
+
+aliases:
+  - &defaults
+    executor:
+      name: devops/custom-aws
+      image: alpine-adoptopenjdk
+      tag: 17.0.2_8-7-master
+    working_directory: ~/messaging-integrations/
+  - &attach_workspace
+    attach_workspace:
+      at: ~/
+  - &persist_to_workspace
+    persist_to_workspace:
+      root: ~/
+      paths:
+        - ./messaging-integrations
+        - .m2
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - *attach_workspace
+      - devops/artifactory-export:
+          build-provider: AWS
+      - devops/jfrog-maven:
+          command: clean install -Dmaven.test.skip=true
+      - *persist_to_workspace
+
+  unit_test:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - devops/artifactory-export:
+          build-provider: AWS
+      - devops/jfrog-maven:
+          command: test -f pom.xml
+
+  publish:
+    working_directory: ~/messaging-integrations
+    executor: devops/master-gcp
+    steps:
+      - *attach_workspace
+      - setup_remote_docker
+      - devops/artifactory-export:
+          build-provider: GCP
+      - devops/gcp-docker-login
+      - devops/docker-build:
+          image-name: messaging-integrations
+      - devops/docker-push:
+          image-name: messaging-integrations
+
+workflows:
+  version: 2
+  messaging-integrations-stg-workflow:
+    jobs:
+      - build:
+          context: build
+          branches:
+            only:
+              - release
+      - publish:
+          context: build
+          requires:
+            - build
+      - hold:
+          type: approval
+          requires:
+            - publish
+      - image-updater/update-image:
+          context: argocd
+          name: update-image-st20
+          helm_repo: narvar/argocd-apps-messaging
+          helm_branch: master
+          helm_dir: resources/helm-charts/messaging-integrations/v1.0.0
+          values_file: st20.yaml
+          image_name: messaging-integrations
+          image_tag: SHA-$CIRCLE_SHA1
+          requires:
+            - hold
+
+  messaging-integrations-qa-workflow:
+    jobs:
+      - build:
+          context: build
+      - publish:
+          context: build
+          requires:
+            - build
+      - hold:
+          type: approval
+          requires:
+            - publish
+      - image-updater/update-image:
+          context: argocd
+          name: update-image-qa20
+          helm_repo: narvar/argocd-apps-messaging
+          helm_branch: master
+          helm_dir: resources/helm-charts/messaging-integrations/v1.0.0
+          values_file: qa20.yaml
+          image_name: messaging-integrations
+          image_tag: SHA-$CIRCLE_SHA1
+          requires:
+            - hold
+  messaging-integrations-prod-workflow:
+    jobs:
+      - build:
+          context: build
+          filters:
+            branches:
+              only:
+                - release
+      - publish:
+          context: build
+          requires:
+            - build
+      - hold:
+          name: hold_gcp
+          type: approval
+          requires:
+            - publish
+      - image-updater/update-image:
+          context: argocd
+          name: deploy-prod20
+          helm_repo: narvar/argocd-apps-messaging
+          helm_branch: master
+          helm_dir: resources/helm-charts/messaging-integrations/v1.0.0
+          values_file: prod20.yaml
+          image_name: messaging-integrations
+          image_tag: SHA-$CIRCLE_SHA1
+          requires:
+            - hold_gcp
