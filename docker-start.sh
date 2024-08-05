@@ -2,8 +2,8 @@
 
 BASE_DIR=`cd $(dirname $0)/..;pwd`
 
-MAIN_CLASS="com.narvar.message.integrations.MessagingIntegrationsApplication"
-JAR_NAME="message-integrations.jar"
+MAIN_CLASS="com.narvar.messaging.integrations.MessagingIntegrationsApplication"
+JAR_NAME="messaging-integrations.jar"
 while getopts j:p:l:s: option
 do
     case "${option}"
