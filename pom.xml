@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.2</version>
+		<version>3.0.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.narvar</groupId>
@@ -14,7 +14,7 @@
 	<name>Messaging Integrations</name>
 	<description>Messaging Integrations</description>
 	<properties>
-		<java.version>13</java.version>
+		<java.version>17</java.version>
 		<spotless-maven-plugin.version>2.22.7</spotless-maven-plugin.version>
 		<google-java-format.version>1.15.0</google-java-format.version>
 		<junit.version>4.13.1</junit.version>
@@ -85,6 +85,14 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

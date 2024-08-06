@@ -9,7 +9,7 @@ aliases:
     executor:
       name: devops/custom-aws
       image: alpine-adoptopenjdk
-      tag: 13.0.2-8-master
+      tag: 17.0.2_8-7-master
     working_directory: ~/messaging-integrations/
   - &attach_workspace
     attach_workspace:
@@ -30,7 +30,7 @@ jobs:
       - devops/artifactory-export:
           build-provider: AWS
       - devops/jfrog-maven:
-          command: clean install
+          command: clean install -Dmaven.test.skip=false
       - *persist_to_workspace
 
   unit_test:
@@ -94,10 +94,6 @@ workflows:
           context: build
           requires:
             - build
-      - hold:
-          type: approval
-          requires:
-            - publish
       - image-updater/update-image:
           context: argocd
           name: update-image-qa20
@@ -108,7 +104,7 @@ workflows:
           image_name: messaging-integrations
           image_tag: SHA-$CIRCLE_SHA1
           requires:
-            - hold
+            - publish
   messaging-integrations-prod-workflow:
     jobs:
       - build:
